@@ -1,0 +1,16 @@
+[Diretorios]
+dirraiz=<DIRRAIZ>;
+dirsis=<DIRSIS>;
+dirphppad=/bibliotecas/php;
+dirimgpad=/bibliotecas/img;
+dircsspad=/bibliotecas/css;
+dirjspad=/bibliotecas/js;
+dirclass=/classes;
+dirmodpad=/modelos;
+
+[Banco de Dados]
+bdhost=<BDHOST>;
+bdsrvprt=<BDPORT>;
+bdnome=<BDNAME>;
+bdusrlogin=<BDUSER>;
+bdusrpass=<BDPWD>;

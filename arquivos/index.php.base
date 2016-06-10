@@ -1,0 +1,94 @@
+<?
+/****************************************************************************
+*  Sistema   : SACI - Sistema de Administração de Conteúdos na Internet		*
+*  Descrição : Apresentação dinâmica de conteúdos SACI						*
+*  Autor     : Bruno Alves Teixeira	/ Ederson Szulczewski					*
+*  Date      : 04/04/2005													*
+****************************************************************************/
+
+define( 'dirurl', "http://".$_SERVER[ 'SERVER_NAME' ].substr( $_SERVER[ 'PHP_SELF' ], 0, strrpos( $_SERVER[ 'PHP_SELF' ], "/" ) ) );
+define( 'arqconfig', "<DIRSIS>/config.php" );
+
+$dirsrc = substr( $_SERVER[ 'PHP_SELF' ], 0, strrpos( $_SERVER[ 'PHP_SELF' ], "/" ) );
+
+/**
+* @return String
+* @param $arquivo
+* @param $variavel
+* @desc Retorna o valor do parâmetro setado no arquivo de configurações de sistema
+*/
+function get_var_config( $arquivo, $variavel ) {
+        $posini = strpos( $arquivo, $variavel ) + strlen( $variavel ) + 1;
+        return substr( $arquivo, $posini, strpos( $arquivo, ';', $posini ) - $posini );
+}
+
+// Verifica se o arquivo de configuraçao setado existe
+if ( !file_exists( constant( 'arqconfig' ) ) ) {
+        $msg = "Não foi possível encontrar o arquivo de configuração do portal!";
+        exit();
+}
+
+$arq  = fopen( constant( 'arqconfig' ), 'r' );
+$conf = fread( $arq, filesize( constant( 'arqconfig' ) ) );
+
+// Faz a leitura das variáveis setadas no arquivo de configuração
+$config = array( 'dirraiz'    => get_var_config( $conf, 'dirraiz' ),    // Diretório raiz onde os scripts estão armazenados no servidor
+                                 'dirsis'     => get_var_config( $conf, 'dirsis' ),             // Diretório onde estão armazenados os scripts de sistema
+                                 'dirphppad'  => get_var_config( $conf, 'dirphppad' ),  // Diretório de scripts padrão dos sistemas
+                                 'bdhost'     => get_var_config( $conf, 'bdhost' ),     // Host servidor de banco de dados
+                                 'bdsrvprt'   => get_var_config( $conf, 'bdsrvprt' ),   // Porta de conexão do servidor de banco de dados
+                                 'bdnome'     => get_var_config( $conf, 'bdnome' ),     // Nome do banco de dados dos sistemas
+								 'bdusrlogin' => get_var_config( $conf, 'bdusrlogin' ), // Login do usuário dos sistemas no banco de dados
+                                 'bdusrpass'  => get_var_config( $conf, 'bdusrpass' )   // Senha do usuário dos sistemas no banco de dados
+);
+
+// Carrega o arquivo de funcoes gerais dos sistemas
+require( $config[ 'dirraiz' ].$config[ 'dirsis' ].$config[ 'dirphppad' ]."/funcoes.php" );
+
+$dbc = db_conect( $config[ 'bdhost' ], $config[ 'bdsrvprt' ], $config[ 'bdnome' ], $config[ 'bdusrlogin' ], $config[ 'bdusrpass' ] );
+
+$res_loctemplate   = db_select( $dbc, "select varvalor from var where varnome='vloctemplate'" );
+$dir_cls_templates = $_SERVER[ 'DOCUMENT_ROOT' ].db_ret_val( $res_loctemplate, 0, 'varvalor'  );
+$dir_templates 	   = db_ret_val( $res_loctemplate, 0, 'varvalor'  )."/templates";
+$dir_img_templates = db_ret_val( $res_loctemplate, 0, 'varvalor'  )."/templates/images";
+$compile_dir 	   = db_ret_val( $res_loctemplate, 0, 'varvalor'  )."/templates_c";
+
+$sccid  = ( isset( $_REQUEST[ 'sccid' ] )  ? $_REQUEST[ 'sccid' ]  : "" );
+$sccant = ( isset( $_REQUEST[ 'sccant' ] ) ? $_REQUEST[ 'sccant' ] : "" );
+$ctuid  = ( isset( $_REQUEST[ 'ctuid' ] )  ? $_REQUEST[ 'ctuid' ]  : "" );
+
+$sql_dmn = "select dmnid,dmnsccid,mopscript,dmnlocup from dmn join scc on 
+			sccid=dmnsccid and dmnurl='".constant( 'dirurl' )."' and dmnsts='t' 
+			and sccsts='t' join mop on mopid=sccmopidvis
+";
+$res_dmn = db_select( $dbc, $sql_dmn );
+
+$dmnid          = db_ret_val( $res_dmn, 0, 'dmnid' );		// Pega o identificador do domínio
+$dir_img_upload = db_ret_val( $res_dmn, 0, 'dmnlocup' );	// Pega o local pra uploads de arquivos do domínio
+$script 		= db_ret_val( $res_dmn, 0, 'mopscript' ); 	// Pega o script do template da seção principal do domínio
+$dmnsccid       = db_ret_val( $res_dmn, 0, 'dmnsccid' );        // Pega a seção principal do domínio
+
+if ( intval( $sccid ) > 0 ) {
+	// Pega o identificador do domínio acessado e seção inicial
+    $res_script = db_select( $dbc, "select mopscript from scc join mop on 
+    								mopid=sccmopidvis and sccsts='t' and 
+    								sccid=$sccid
+    " );
+    
+    $script = db_ret_val( $res_script, 0, "mopscript" ); 	// Pega o script do template da seção atual
+} else {
+	$sccid  = db_ret_val( $res_dmn, 0, "dmnsccid" ); 		// Pega o identificador da seção principal do domínio
+}
+
+	$html_topo = "
+                <td class='semmargem' bgcolor='#FFCC00'><a name='topo'></a>
+                                                <div style='float:left'>
+                                                        <a href='http://www.mda.gov.br' target='_blank'><img src='$dir_img_templates/topo_mda_1.gif' width='278' height='21' border='0'></a></div>
+                                                <div style='float:right'>
+                                                        <a href='http://www.brasil.gov.br' target='_blank'><img src='$dir_img_templates/topo_mda_2.gif' width='92' height='21' border='0'></a></div>
+                                                <img src='$dir_img_templates/pixel.gif' width='373' height='1'></td>
+                                        <td bgcolor='#FFCC00'>&nbsp;</td>
+        ";
+
+require( $dir_cls_templates."/".$script );
+?>

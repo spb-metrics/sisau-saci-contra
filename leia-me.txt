@@ -1,0 +1,36 @@
+Sistemas desenvolvidos e publicados pela equipe do Ministério do Desenvolvimento Agrário - MDA
+
+O Contra - Sistema de Controle de Acessos e Modularização de Sistemas - gerencia os módulos e sistemas,
+bem como seus usuários e permissão de acessos, como um centralizador destas funções básicas de qualquer
+sistema.
+
+O Sisau - Sistema de Atendimento ao Usuário - gerencia os serviços demandados pelo usuários da rede de 
+sua instituição, permitindo o gerenciamento de atendimentos do departamento administrativo ou ainda os 
+de informática.
+
+O Saci Livre - Sistema de Administração de Conteúdos Institucionais na Internet - gerencia múltiplos 
+portais, possibilitando a definição das permissões de publicação de cada usuário e a criação de 
+hierarquias de informação dentro de cada portal.
+
+Para realizar a instalação correta dos sistemas Contra, Sisau e Saci Livre, siga os passos descritos 
+abaixo:
+
+Baixar o instalador em :
+
+1. Instalar o servidor de páginas apache com suporte a PHP
+2. Instalar os módulos de suporte PGSQL para o PHP
+3. Instalar o Smarty Template
+4. Instalar o PostgreSQL
+5. Descompacte o instalador em alguma pasta a partir do document root em seu servidor
+6. Acesse o instalador e execute os passos indicados
+
+Recomendamos que altere o arquivo index.php na pasta de instalação dos sistemas, para que o arquivo 
+config.php fique fora do document root.
+
+Dentro da pasta classes/contra existe um arquivo de include chamado inc_user.php, que poderá ser 
+utilizado para replicação da base de usuários de seus sistemas para suporte ao Contra.
+
+Para exemplo da utilização do SISAU, uma pasta com o endereço de instalação do sistema /intranet foi
+criado.
+
+Software Livre: um contrato aberto com o cidadão.
